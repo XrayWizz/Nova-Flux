@@ -24,9 +24,10 @@ local UISettings = {
     CornerRadius = UDim.new(0, 12),
     
     -- Elevation and States
-    SurfaceElevation = 0.95, -- High transparency for AMOLED
-    HoverElevation = 0.93, -- Slightly more visible on hover
-    PressedElevation = 0.92, -- Most visible when pressed
+    SurfaceElevation = 0.85, -- Less transparency for better visibility
+    HoverElevation = 0.82, -- Slightly more visible on hover
+    PressedElevation = 0.80, -- Most visible when pressed
+    GlowTransparency = 0.85, -- Consistent glow effect
 }
 
 function Library:CreateWindow(title)
@@ -49,7 +50,7 @@ function Library:CreateWindow(title)
     MainFrame.BackgroundTransparency = UISettings.SurfaceElevation
     MainFrame.Parent = MainUI
     
-    -- Add subtle drop shadow
+    -- Add subtle drop shadow (only visible when not minimized)
     local DropShadow = Instance.new("ImageLabel")
     DropShadow.Name = "DropShadow"
     DropShadow.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -336,7 +337,7 @@ function Library:CreateWindow(title)
         MainUI:Destroy()
     end)
     
-    -- Minimize Button Functionality
+    -- Minimize Button Functionality with shadow handling
     local minimized = false
     local originalSize = MainFrame.Size
     
@@ -345,10 +346,11 @@ function Library:CreateWindow(title)
         if minimized then
             NavBar.Visible = false
             ContentFrame.Visible = false
+            DropShadow.Visible = false -- Hide shadow when minimized
             
             -- Smooth minimize animation
             TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                Size = UDim2.new(0, 450, 0, 40)
+                Size = UDim2.new(0, 450, 0, 30)
             }):Play()
         else
             -- Smooth restore animation
@@ -360,6 +362,7 @@ function Library:CreateWindow(title)
             wait(0.2)
             NavBar.Visible = true
             ContentFrame.Visible = true
+            DropShadow.Visible = true -- Show shadow when restored
         end
     end)
     
@@ -383,7 +386,7 @@ function Library:CreateWindow(title)
         DebugLogContainer.Size = UDim2.new(1, -20, 0.7, -10)
         DebugLogContainer.Position = UDim2.new(0, 10, 0, 10)
         DebugLogContainer.BackgroundColor3 = UISettings.MainColor
-        DebugLogContainer.BackgroundTransparency = 0.92
+        DebugLogContainer.BackgroundTransparency = 0.82 -- More visible
         DebugLogContainer.BorderSizePixel = 0
         DebugLogContainer.ScrollBarThickness = 2
         DebugLogContainer.ScrollingDirection = Enum.ScrollingDirection.Y
@@ -516,7 +519,7 @@ function Library:CreateWindow(title)
         Glow.ZIndex = button.ZIndex - 1
         Glow.Image = "rbxassetid://4996891970" -- Radial gradient
         Glow.ImageColor3 = UISettings.HighlightColor
-        Glow.ImageTransparency = 0.85
+        Glow.ImageTransparency = UISettings.GlowTransparency
         Glow.Parent = button
     end
 
