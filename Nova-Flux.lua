@@ -16,6 +16,7 @@ local UISettings = {
     SecondaryHighlight = Color3.fromRGB(171, 20, 23), -- Darker Nebula Red for states
     SurfaceContainerHigh = Color3.fromRGB(45, 44, 48), -- md.sys.color.surface-container-high
     OutlineColor = Color3.fromRGB(147, 143, 153), -- md.sys.color.outline
+    DebugTextColor = Color3.fromRGB(201, 23, 27), -- Using the same Nebula Crimson Red for debug text
     
     -- Typography
     FontFamily = Enum.Font.GothamBold,
@@ -43,7 +44,7 @@ function Library:CreateWindow(title)
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
     MainFrame.Size = UDim2.new(0, 450, 0, 300)
-    MainFrame.Position = UDim2.new(0.5, -225, 0.5, -150)
+    MainFrame.Position = UDim2.new(0.5, -225, 0.5, -170)
     MainFrame.BackgroundColor3 = UISettings.MainColor
     MainFrame.BackgroundTransparency = UISettings.SurfaceElevation
     MainFrame.Parent = MainUI
@@ -69,7 +70,7 @@ function Library:CreateWindow(title)
     -- Title Bar with elevated surface
     local TitleBar = Instance.new("Frame")
     TitleBar.Name = "TitleBar"
-    TitleBar.Size = UDim2.new(1, 0, 0, 40)
+    TitleBar.Size = UDim2.new(1, 0, 0, 30)
     TitleBar.BackgroundColor3 = UISettings.SurfaceContainerHigh
     TitleBar.BackgroundTransparency = UISettings.SurfaceElevation
     TitleBar.Parent = MainFrame
@@ -101,12 +102,12 @@ function Library:CreateWindow(title)
     -- Update Close Button with Material You 3 styling
     local CloseButton = Instance.new("TextButton")
     CloseButton.Name = "CloseButton"
-    CloseButton.Size = UDim2.new(0, 40, 0, 40)
-    CloseButton.Position = UDim2.new(1, -40, 0, 0)
+    CloseButton.Size = UDim2.new(0, 30, 0, 30)
+    CloseButton.Position = UDim2.new(1, -30, 0, 0)
     CloseButton.BackgroundTransparency = 1
     CloseButton.Text = "×"
     CloseButton.TextColor3 = UISettings.TextColor
-    CloseButton.TextSize = 24
+    CloseButton.TextSize = 20
     CloseButton.Font = UISettings.FontFamily
     CloseButton.Parent = TitleBar
     
@@ -126,12 +127,12 @@ function Library:CreateWindow(title)
     -- Update Minimize Button with Material You 3 styling
     local MinimizeButton = Instance.new("TextButton")
     MinimizeButton.Name = "MinimizeButton"
-    MinimizeButton.Size = UDim2.new(0, 40, 0, 40)
-    MinimizeButton.Position = UDim2.new(1, -80, 0, 0)
+    MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
+    MinimizeButton.Position = UDim2.new(1, -60, 0, 0)
     MinimizeButton.BackgroundTransparency = 1
     MinimizeButton.Text = "−"
     MinimizeButton.TextColor3 = UISettings.TextColor
-    MinimizeButton.TextSize = 24
+    MinimizeButton.TextSize = 20
     MinimizeButton.Font = UISettings.FontFamily
     MinimizeButton.Parent = TitleBar
     
@@ -151,8 +152,8 @@ function Library:CreateWindow(title)
     -- Navigation Bar with elevated surface
     local NavBar = Instance.new("Frame")
     NavBar.Name = "NavBar"
-    NavBar.Size = UDim2.new(0, 110, 1, -40)
-    NavBar.Position = UDim2.new(0, 0, 0, 40)
+    NavBar.Size = UDim2.new(0, 110, 1, -30)
+    NavBar.Position = UDim2.new(0, 0, 0, 30)
     NavBar.BackgroundColor3 = UISettings.SurfaceContainerHigh
     NavBar.BackgroundTransparency = UISettings.SurfaceElevation
     NavBar.Parent = MainFrame
@@ -171,8 +172,8 @@ function Library:CreateWindow(title)
     -- Content Frame with Material You 3 elevation
     local ContentFrame = Instance.new("Frame")
     ContentFrame.Name = "ContentFrame"
-    ContentFrame.Size = UDim2.new(1, -120, 1, -50)
-    ContentFrame.Position = UDim2.new(0, 115, 0, 45)
+    ContentFrame.Size = UDim2.new(1, -120, 1, -40)
+    ContentFrame.Position = UDim2.new(0, 115, 0, 35)
     ContentFrame.BackgroundColor3 = UISettings.SurfaceContainerHigh
     ContentFrame.BackgroundTransparency = UISettings.SurfaceElevation
     ContentFrame.Parent = MainFrame
@@ -214,12 +215,13 @@ function Library:CreateWindow(title)
             end
         end
         ComingSoonLabel.Visible = true
+        ComingSoonLabel.TextColor3 = UISettings.DebugTextColor -- Set debug text to red
     end
     
     for _, buttonText in ipairs(buttons) do
         local ButtonContainer = Instance.new("Frame")
         ButtonContainer.Name = buttonText .. "Container"
-        ButtonContainer.Size = UDim2.new(0.9, 0, 0, 36)
+        ButtonContainer.Size = UDim2.new(0.9, 0, 0, 30)
         ButtonContainer.Position = UDim2.new(0.05, 0, 0, currentY)
         ButtonContainer.BackgroundColor3 = UISettings.ButtonColor
         ButtonContainer.BackgroundTransparency = UISettings.SurfaceElevation
@@ -243,7 +245,7 @@ function Library:CreateWindow(title)
         Button.BackgroundTransparency = 1
         Button.Text = buttonText
         Button.TextColor3 = UISettings.TextColor
-        Button.TextSize = 14
+        Button.TextSize = 12
         Button.Font = UISettings.FontFamily
         Button.Parent = ButtonContainer
         
@@ -257,15 +259,17 @@ function Library:CreateWindow(title)
                 if otherButton:IsA("Frame") and otherButton.Name:find("Container") then
                     otherButton.BackgroundColor3 = UISettings.ButtonColor
                     otherButton.BackgroundTransparency = UISettings.SurfaceElevation
+                    local textButton = otherButton:FindFirstChild(otherButton.Name:gsub("Container", "Button"))
+                    if textButton then
+                        textButton.TextColor3 = UISettings.TextColor
+                    end
                 end
             end
             
-            -- Apply selected state
+            -- Apply selected state with red highlight
             ButtonContainer.BackgroundColor3 = UISettings.HighlightColor
             ButtonContainer.BackgroundTransparency = 0
-            TweenService:Create(Button, TweenInfo.new(0.3), {
-                TextColor3 = Color3.fromRGB(255, 255, 255)
-            }):Play()
+            Button.TextColor3 = Color3.fromRGB(255, 255, 255)
         end)
         
         -- Enhanced Hover Effects
@@ -287,7 +291,7 @@ function Library:CreateWindow(title)
             end
         end)
         
-        currentY = currentY + 40 + 4  -- Increased spacing for better touch targets
+        currentY = currentY + 32 + buttonSpacing  -- Reduced spacing (was 40 + 4)
     end
     
     -- Dragging Functionality
