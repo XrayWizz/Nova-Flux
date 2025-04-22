@@ -30,8 +30,8 @@ function Library:CreateWindow(title)
     
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
-    MainFrame.Size = UDim2.new(0, 600, 0, 400)
-    MainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
+    MainFrame.Size = UDim2.new(0, 500, 0, 350) -- Reduced size
+    MainFrame.Position = UDim2.new(0.5, -250, 0.5, -175) -- Adjusted position for new size
     MainFrame.BackgroundColor3 = UISettings.MainColor
     MainFrame.Parent = MainUI
     
@@ -91,7 +91,7 @@ function Library:CreateWindow(title)
     -- Navigation Bar
     local NavBar = Instance.new("Frame")
     NavBar.Name = "NavBar"
-    NavBar.Size = UDim2.new(0, 150, 1, -30)
+    NavBar.Size = UDim2.new(0, 130, 1, -30) -- Slightly smaller nav bar
     NavBar.Position = UDim2.new(0, 0, 0, 30)
     NavBar.BackgroundColor3 = UISettings.AccentColor
     NavBar.Parent = MainFrame
@@ -103,16 +103,39 @@ function Library:CreateWindow(title)
     -- Content Frame
     local ContentFrame = Instance.new("Frame")
     ContentFrame.Name = "ContentFrame"
-    ContentFrame.Size = UDim2.new(1, -160, 1, -40)
-    ContentFrame.Position = UDim2.new(0, 155, 0, 35)
+    ContentFrame.Size = UDim2.new(1, -140, 1, -40) -- Adjusted for new size
+    ContentFrame.Position = UDim2.new(0, 135, 0, 35)
     ContentFrame.BackgroundColor3 = UISettings.MainColor
     ContentFrame.BackgroundTransparency = 0.5
     ContentFrame.Parent = MainFrame
+    
+    -- Coming Soon Label (hidden by default)
+    local ComingSoonLabel = Instance.new("TextLabel")
+    ComingSoonLabel.Name = "ComingSoonLabel"
+    ComingSoonLabel.Size = UDim2.new(1, -20, 0, 30)
+    ComingSoonLabel.Position = UDim2.new(0, 10, 0, 10)
+    ComingSoonLabel.BackgroundTransparency = 1
+    ComingSoonLabel.Text = "Coming Soon!"
+    ComingSoonLabel.TextColor3 = UISettings.TextColor
+    ComingSoonLabel.TextSize = 18
+    ComingSoonLabel.Font = UISettings.FontFamily
+    ComingSoonLabel.Parent = ContentFrame
+    ComingSoonLabel.Visible = false
     
     -- Create Navigation Buttons
     local buttons = {"Overview", "Fruits", "Quests/Raids", "Sea-Events", "Teleport", "Misc", "Settings"}
     local buttonSpacing = 5
     local currentY = 10
+    
+    -- Function to clear content frame
+    local function clearContentFrame()
+        for _, child in ipairs(ContentFrame:GetChildren()) do
+            if child.Name ~= "ComingSoonLabel" then
+                child:Destroy()
+            end
+        end
+        ComingSoonLabel.Visible = true
+    end
     
     for _, buttonText in ipairs(buttons) do
         local Button = Instance.new("TextButton")
@@ -129,6 +152,12 @@ function Library:CreateWindow(title)
         local ButtonCorner = Instance.new("UICorner")
         ButtonCorner.CornerRadius = UDim.new(0, 6)
         ButtonCorner.Parent = Button
+        
+        -- Button Functionality
+        Button.MouseButton1Click:Connect(function()
+            clearContentFrame()
+            ComingSoonLabel.Text = buttonText .. " - Coming Soon!"
+        end)
         
         -- Hover Effect
         Button.MouseEnter:Connect(function()
@@ -190,14 +219,19 @@ function Library:CreateWindow(title)
     
     -- Minimize Button Functionality
     local minimized = false
+    local originalSize = MainFrame.Size
     MinimizeButton.MouseButton1Click:Connect(function()
         minimized = not minimized
         if minimized then
-            MainFrame:TweenSize(UDim2.new(0, 600, 0, 30), "Out", "Quad", 0.3, true)
+            MainFrame:TweenSize(UDim2.new(0, 500, 0, 30), "Out", "Quad", 0.3, true)
         else
-            MainFrame:TweenSize(UDim2.new(0, 600, 0, 400), "Out", "Quad", 0.3, true)
+            MainFrame:TweenSize(originalSize, "Out", "Quad", 0.3, true)
         end
     end)
+    
+    -- Show Overview by default
+    clearContentFrame()
+    ComingSoonLabel.Text = "Overview - Coming Soon!"
     
     return MainUI
 end
