@@ -219,13 +219,67 @@ function Library:CreateWindow(title)
         ComingSoonLabel.TextColor3 = UISettings.DebugTextColor -- Set debug text to red
     end
     
+    -- Function to create glowing text effect
+    local function setGlowingText(textButton, isSelected)
+        if isSelected then
+            -- Create or update text glow effect
+            local existingGlow = textButton:FindFirstChild("TextGlow")
+            if not existingGlow then
+                local textGlow = Instance.new("TextLabel")
+                textGlow.Name = "TextGlow"
+                textGlow.Size = UDim2.new(1, 0, 1, 0)
+                textGlow.Position = UDim2.new(0, 0, 0, 0)
+                textGlow.BackgroundTransparency = 1
+                textGlow.Text = textButton.Text
+                textGlow.TextColor3 = UISettings.HighlightColor
+                textGlow.TextSize = textButton.TextSize
+                textGlow.Font = textButton.Font
+                textGlow.ZIndex = textButton.ZIndex - 1
+                textGlow.TextTransparency = 0
+                textGlow.Parent = textButton
+            end
+            textButton.TextColor3 = UISettings.HighlightColor
+        else
+            -- Remove glow effect and reset text color
+            local glow = textButton:FindFirstChild("TextGlow")
+            if glow then
+                glow:Destroy()
+            end
+            textButton.TextColor3 = UISettings.TextColor
+        end
+    end
+
+    -- Function to update button states
+    local function updateButtonStates(selectedButton)
+        for _, child in ipairs(NavBar:GetChildren()) do
+            if child:IsA("Frame") and child.Name:find("Container") then
+                local button = child:FindFirstChild(child.Name:gsub("Container", "Button"))
+                if button then
+                    local isSelected = (button == selectedButton)
+                    child.BackgroundColor3 = isSelected and UISettings.HighlightColor or UISettings.ButtonColor
+                    child.BackgroundTransparency = 0
+                    setGlowingText(button, isSelected)
+                    
+                    -- Handle glow effect
+                    local glow = child:FindFirstChild("Glow")
+                    if glow then
+                        glow:Destroy()
+                    end
+                    if isSelected then
+                        addButtonGlow(child)
+                    end
+                end
+            end
+        end
+    end
+
     for _, buttonText in ipairs(buttons) do
         local ButtonContainer = Instance.new("Frame")
         ButtonContainer.Name = buttonText .. "Container"
-        ButtonContainer.Size = UDim2.new(0.9, 0, 0, 26) -- Reduced height from 30 to 26
+        ButtonContainer.Size = UDim2.new(0.9, 0, 0, 26)
         ButtonContainer.Position = UDim2.new(0.05, 0, 0, currentY)
         ButtonContainer.BackgroundColor3 = UISettings.ButtonColor
-        ButtonContainer.BackgroundTransparency = UISettings.SurfaceElevation
+        ButtonContainer.BackgroundTransparency = 0
         ButtonContainer.Parent = NavBar
         
         -- Add subtle stroke to buttons
@@ -250,27 +304,16 @@ function Library:CreateWindow(title)
         Button.Font = UISettings.FontFamily
         Button.Parent = ButtonContainer
         
-        -- Enhanced Button Functionality with Material You 3 state changes
         Button.MouseButton1Click:Connect(function()
-            clearContentFrame()
-            ComingSoonLabel.Text = buttonText .. " - Coming Soon!"
-            
-            -- Update all buttons to default state
-            for _, otherButton in ipairs(NavBar:GetChildren()) do
-                if otherButton:IsA("Frame") and otherButton.Name:find("Container") then
-                    otherButton.BackgroundColor3 = UISettings.ButtonColor
-                    otherButton.BackgroundTransparency = UISettings.SurfaceElevation
-                    local textButton = otherButton:FindFirstChild(otherButton.Name:gsub("Container", "Button"))
-                    if textButton then
-                        textButton.TextColor3 = UISettings.TextColor
-                    end
-                end
+            updateButtonStates(Button)
+
+            if buttonText == "Advanced" then
+                local DebugPanel = createAdvancedPanel()
+                Library.DebugPanel = DebugPanel
+            else
+                clearContentFrame()
+                ComingSoonLabel.Text = buttonText .. " - Coming Soon!"
             end
-            
-            -- Apply selected state with red highlight
-            ButtonContainer.BackgroundColor3 = UISettings.HighlightColor
-            ButtonContainer.BackgroundTransparency = 0
-            Button.TextColor3 = Color3.fromRGB(255, 255, 255)
         end)
         
         -- Enhanced Hover Effects
@@ -292,7 +335,18 @@ function Library:CreateWindow(title)
             end
         end)
         
-        currentY = currentY + 28 + buttonSpacing  -- Reduced spacing (was 32 + buttonSpacing)
+        currentY = currentY + 28 + buttonSpacing
+    end
+    
+    -- Set Overview as default selected button
+    local OverviewButton = NavBar:FindFirstChild("OverviewContainer")
+    if OverviewButton then
+        local button = OverviewButton:FindFirstChild("OverviewButton")
+        if button then
+            updateButtonStates(button)
+            clearContentFrame()
+            ComingSoonLabel.Text = "Overview - Coming Soon!"
+        end
     end
     
     -- Dragging Functionality
@@ -365,14 +419,6 @@ function Library:CreateWindow(title)
             DropShadow.Visible = true -- Show shadow when restored
         end
     end)
-    
-    -- Show Overview by default
-    local OverviewButton = NavBar:FindFirstChild("OverviewContainer")
-    if OverviewButton then
-        OverviewButton.BackgroundColor3 = UISettings.HighlightColor
-    end
-    clearContentFrame()
-    ComingSoonLabel.Text = "Overview - Coming Soon!"
     
     -- Function to create the Advanced Debug Panel
     local function createAdvancedPanel()
@@ -521,71 +567,6 @@ function Library:CreateWindow(title)
         Glow.ImageColor3 = UISettings.HighlightColor
         Glow.ImageTransparency = UISettings.GlowTransparency
         Glow.Parent = button
-    end
-
-    -- Update button click handling with glow effect
-    for _, child in ipairs(NavBar:GetChildren()) do
-        if child:IsA("Frame") and child.Name:find("Container") then
-            local button = child:FindFirstChild(child.Name:gsub("Container", "Button"))
-            if button then
-                button.MouseButton1Click:Connect(function()
-                    -- Update all buttons to default state
-                    for _, otherButton in ipairs(NavBar:GetChildren()) do
-                        if otherButton:IsA("Frame") and otherButton.Name:find("Container") then
-                            otherButton.BackgroundColor3 = UISettings.ButtonColor
-                            otherButton.BackgroundTransparency = 0
-                            local textButton = otherButton:FindFirstChild(otherButton.Name:gsub("Container", "Button"))
-                            if textButton then
-                                textButton.TextColor3 = UISettings.TextColor
-                                local glow = textButton:FindFirstChild("Glow")
-                                if glow then
-                                    glow:Destroy()
-                                end
-                            end
-                        end
-                    end
-
-                    -- Apply selected state with glow
-                    child.BackgroundColor3 = UISettings.HighlightColor
-                    child.BackgroundTransparency = 0
-                    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-                    addButtonGlow(child)
-
-                    -- Handle specific panel content
-                    if button.Text == "Advanced" then
-                        local DebugPanel = createAdvancedPanel()
-                        Library.DebugPanel = DebugPanel
-                    else
-                        clearContentFrame()
-                        ComingSoonLabel.Text = button.Text .. " - Coming Soon!"
-                    end
-                end)
-
-                -- Enhanced hover effects with glow
-                child.MouseEnter:Connect(function()
-                    if child.BackgroundColor3 ~= UISettings.HighlightColor then
-                        TweenService:Create(child, TweenInfo.new(0.2), {
-                            BackgroundTransparency = 0,
-                            BackgroundColor3 = UISettings.SurfaceContainerHigh
-                        }):Play()
-                        addButtonGlow(child)
-                    end
-                end)
-
-                child.MouseLeave:Connect(function()
-                    if child.BackgroundColor3 ~= UISettings.HighlightColor then
-                        TweenService:Create(child, TweenInfo.new(0.2), {
-                            BackgroundTransparency = 0,
-                            BackgroundColor3 = UISettings.ButtonColor
-                        }):Play()
-                        local glow = child:FindFirstChild("Glow")
-                        if glow then
-                            glow:Destroy()
-                        end
-                    end
-                end)
-            end
-        end
     end
 
     return MainUI
