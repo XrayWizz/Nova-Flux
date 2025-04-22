@@ -7,12 +7,12 @@ local UserInputService = game:GetService("UserInputService")
 
 -- UI Settings
 local UISettings = {
-    MainColor = Color3.fromRGB(25, 25, 35),
-    AccentColor = Color3.fromRGB(45, 45, 65),
+    MainColor = Color3.fromRGB(0, 0, 0), -- AMOLED black
+    AccentColor = Color3.fromRGB(10, 10, 10), -- Slightly lighter black
     TextColor = Color3.fromRGB(255, 255, 255),
     HighlightColor = Color3.fromRGB(100, 90, 255),
     FontFamily = Enum.Font.GothamBold,
-    ButtonSize = UDim2.new(0, 150, 0, 30),
+    ButtonSize = UDim2.new(0, 150, 0, 25), -- Reduced button height
     CornerRadius = UDim.new(0, 8)
 }
 
@@ -30,9 +30,10 @@ function Library:CreateWindow(title)
     
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
-    MainFrame.Size = UDim2.new(0, 500, 0, 350) -- Reduced size
-    MainFrame.Position = UDim2.new(0.5, -250, 0.5, -175) -- Adjusted position for new size
+    MainFrame.Size = UDim2.new(0, 450, 0, 300) -- Even smaller size
+    MainFrame.Position = UDim2.new(0.5, -225, 0.5, -150) -- Adjusted position
     MainFrame.BackgroundColor3 = UISettings.MainColor
+    MainFrame.BackgroundTransparency = 0.1 -- Slight transparency
     MainFrame.Parent = MainUI
     
     -- Add rounded corners
@@ -45,6 +46,7 @@ function Library:CreateWindow(title)
     TitleBar.Name = "TitleBar"
     TitleBar.Size = UDim2.new(1, 0, 0, 30)
     TitleBar.BackgroundColor3 = UISettings.AccentColor
+    TitleBar.BackgroundTransparency = 0.1
     TitleBar.Parent = MainFrame
     
     local TitleCorner = Instance.new("UICorner")
@@ -91,9 +93,10 @@ function Library:CreateWindow(title)
     -- Navigation Bar
     local NavBar = Instance.new("Frame")
     NavBar.Name = "NavBar"
-    NavBar.Size = UDim2.new(0, 130, 1, -30) -- Slightly smaller nav bar
+    NavBar.Size = UDim2.new(0, 110, 1, -30) -- Even smaller nav bar
     NavBar.Position = UDim2.new(0, 0, 0, 30)
     NavBar.BackgroundColor3 = UISettings.AccentColor
+    NavBar.BackgroundTransparency = 0.1
     NavBar.Parent = MainFrame
     
     local NavCorner = Instance.new("UICorner")
@@ -103,10 +106,10 @@ function Library:CreateWindow(title)
     -- Content Frame
     local ContentFrame = Instance.new("Frame")
     ContentFrame.Name = "ContentFrame"
-    ContentFrame.Size = UDim2.new(1, -140, 1, -40) -- Adjusted for new size
-    ContentFrame.Position = UDim2.new(0, 135, 0, 35)
+    ContentFrame.Size = UDim2.new(1, -120, 1, -40) -- Adjusted for new size
+    ContentFrame.Position = UDim2.new(0, 115, 0, 35)
     ContentFrame.BackgroundColor3 = UISettings.MainColor
-    ContentFrame.BackgroundTransparency = 0.5
+    ContentFrame.BackgroundTransparency = 0.1
     ContentFrame.Parent = MainFrame
     
     -- Coming Soon Label (hidden by default)
@@ -124,8 +127,8 @@ function Library:CreateWindow(title)
     
     -- Create Navigation Buttons
     local buttons = {"Overview", "Fruits", "Quests/Raids", "Sea-Events", "Teleport", "Misc", "Settings"}
-    local buttonSpacing = 5
-    local currentY = 10
+    local buttonSpacing = 2 -- Reduced spacing
+    local currentY = 5 -- Start closer to top
     
     -- Function to clear content frame
     local function clearContentFrame()
@@ -140,12 +143,13 @@ function Library:CreateWindow(title)
     for _, buttonText in ipairs(buttons) do
         local Button = Instance.new("TextButton")
         Button.Name = buttonText .. "Button"
-        Button.Size = UDim2.new(0.9, 0, 0, 35)
+        Button.Size = UDim2.new(0.9, 0, 0, 30) -- Smaller button height
         Button.Position = UDim2.new(0.05, 0, 0, currentY)
         Button.BackgroundColor3 = UISettings.MainColor
+        Button.BackgroundTransparency = 0.1
         Button.Text = buttonText
         Button.TextColor3 = UISettings.TextColor
-        Button.TextSize = 14
+        Button.TextSize = 12 -- Smaller text
         Button.Font = UISettings.FontFamily
         Button.Parent = NavBar
         
@@ -172,7 +176,7 @@ function Library:CreateWindow(title)
             }):Play()
         end)
         
-        currentY = currentY + 40 + buttonSpacing
+        currentY = currentY + 33 + buttonSpacing -- Reduced spacing between buttons
     end
     
     -- Dragging Functionality
@@ -220,12 +224,50 @@ function Library:CreateWindow(title)
     -- Minimize Button Functionality
     local minimized = false
     local originalSize = MainFrame.Size
+    local originalNavCorner = NavBar.UICorner.CornerRadius
+    local originalContentCorner = ContentFrame.UICorner and ContentFrame.UICorner.CornerRadius or UISettings.CornerRadius
+
     MinimizeButton.MouseButton1Click:Connect(function()
         minimized = not minimized
         if minimized then
-            MainFrame:TweenSize(UDim2.new(0, 500, 0, 30), "Out", "Quad", 0.3, true)
+            -- Hide content first
+            NavBar.Visible = false
+            ContentFrame.Visible = false
+            
+            -- Adjust corners for minimized state
+            if NavBar.UICorner then
+                NavBar.UICorner.CornerRadius = UDim.new(0, 0)
+            end
+            if ContentFrame.UICorner then
+                ContentFrame.UICorner.CornerRadius = UDim.new(0, 0)
+            end
+            
+            -- Only round the bottom corners of title bar when minimized
+            TitleCorner.CornerRadius = UDim.new(0, 8)
+            Corner.CornerRadius = UDim.new(0, 8)
+            
+            -- Minimize with tweening
+            MainFrame:TweenSize(UDim2.new(0, 450, 0, 30), "Out", "Quad", 0.3, true)
         else
+            -- Restore original corner radius
+            if NavBar.UICorner then
+                NavBar.UICorner.CornerRadius = originalNavCorner
+            end
+            if ContentFrame.UICorner then
+                ContentFrame.UICorner.CornerRadius = originalContentCorner
+            end
+            
+            -- Restore corners
+            TitleCorner.CornerRadius = UISettings.CornerRadius
+            Corner.CornerRadius = UISettings.CornerRadius
+            
+            -- Restore size with tweening
             MainFrame:TweenSize(originalSize, "Out", "Quad", 0.3, true)
+            
+            -- Show content after size restoration
+            task.wait(0.2) -- Small delay to prevent visual glitches
+            NavBar.Visible = true
+            ContentFrame.Visible = true
         end
     end)
     
