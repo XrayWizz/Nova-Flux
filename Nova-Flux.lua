@@ -24,10 +24,10 @@ local UISettings = {
     CornerRadius = UDim.new(0, 12),
     
     -- Elevation and States
-    SurfaceElevation = 0.85, -- Less transparency for better visibility
-    HoverElevation = 0.82, -- Slightly more visible on hover
-    PressedElevation = 0.80, -- Most visible when pressed
-    GlowTransparency = 0.85, -- Consistent glow effect
+    SurfaceElevation = 0, -- No transparency
+    HoverElevation = 0, -- No transparency on hover
+    PressedElevation = 0, -- No transparency when pressed
+    GlowTransparency = 0.7, -- Keep glow effect visible
 }
 
 function Library:CreateWindow(title)
@@ -47,7 +47,7 @@ function Library:CreateWindow(title)
     MainFrame.Size = UDim2.new(0, 450, 0, 300)
     MainFrame.Position = UDim2.new(0.5, -225, 0.5, -170)
     MainFrame.BackgroundColor3 = UISettings.MainColor
-    MainFrame.BackgroundTransparency = UISettings.SurfaceElevation
+    MainFrame.BackgroundTransparency = 0
     MainFrame.Parent = MainUI
     
     -- Add subtle drop shadow (only visible when not minimized)
@@ -386,7 +386,7 @@ function Library:CreateWindow(title)
         DebugLogContainer.Size = UDim2.new(1, -20, 0.7, -10)
         DebugLogContainer.Position = UDim2.new(0, 10, 0, 10)
         DebugLogContainer.BackgroundColor3 = UISettings.MainColor
-        DebugLogContainer.BackgroundTransparency = 0.82 -- More visible
+        DebugLogContainer.BackgroundTransparency = 0
         DebugLogContainer.BorderSizePixel = 0
         DebugLogContainer.ScrollBarThickness = 2
         DebugLogContainer.ScrollingDirection = Enum.ScrollingDirection.Y
@@ -533,7 +533,7 @@ function Library:CreateWindow(title)
                     for _, otherButton in ipairs(NavBar:GetChildren()) do
                         if otherButton:IsA("Frame") and otherButton.Name:find("Container") then
                             otherButton.BackgroundColor3 = UISettings.ButtonColor
-                            otherButton.BackgroundTransparency = UISettings.SurfaceElevation
+                            otherButton.BackgroundTransparency = 0
                             local textButton = otherButton:FindFirstChild(otherButton.Name:gsub("Container", "Button"))
                             if textButton then
                                 textButton.TextColor3 = UISettings.TextColor
@@ -547,7 +547,7 @@ function Library:CreateWindow(title)
 
                     -- Apply selected state with glow
                     child.BackgroundColor3 = UISettings.HighlightColor
-                    child.BackgroundTransparency = 0.85
+                    child.BackgroundTransparency = 0
                     button.TextColor3 = Color3.fromRGB(255, 255, 255)
                     addButtonGlow(child)
 
@@ -565,7 +565,7 @@ function Library:CreateWindow(title)
                 child.MouseEnter:Connect(function()
                     if child.BackgroundColor3 ~= UISettings.HighlightColor then
                         TweenService:Create(child, TweenInfo.new(0.2), {
-                            BackgroundTransparency = UISettings.HoverElevation,
+                            BackgroundTransparency = 0,
                             BackgroundColor3 = UISettings.SurfaceContainerHigh
                         }):Play()
                         addButtonGlow(child)
@@ -575,7 +575,7 @@ function Library:CreateWindow(title)
                 child.MouseLeave:Connect(function()
                     if child.BackgroundColor3 ~= UISettings.HighlightColor then
                         TweenService:Create(child, TweenInfo.new(0.2), {
-                            BackgroundTransparency = UISettings.SurfaceElevation,
+                            BackgroundTransparency = 0,
                             BackgroundColor3 = UISettings.ButtonColor
                         }):Play()
                         local glow = child:FindFirstChild("Glow")
