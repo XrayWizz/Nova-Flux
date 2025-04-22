@@ -5,28 +5,28 @@ local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
--- UI Settings with Material You 3 Theme
+-- UI Settings with Material You 3 Theme (AMOLED)
 local UISettings = {
-    -- Surface colors (Material You 3)
-    MainColor = Color3.fromRGB(28, 27, 31), -- md.sys.color.surface
-    AccentColor = Color3.fromRGB(32, 31, 35), -- md.sys.color.surface-container
-    ButtonColor = Color3.fromRGB(73, 69, 79), -- md.sys.color.surface-container-low
-    TextColor = Color3.fromRGB(230, 225, 229), -- md.sys.color.on-surface
-    HighlightColor = Color3.fromRGB(201, 23, 27), -- Nebula Crimson Red accent
-    SecondaryHighlight = Color3.fromRGB(171, 20, 23), -- Darker Nebula Red for states
-    SurfaceContainerHigh = Color3.fromRGB(45, 44, 48), -- md.sys.color.surface-container-high
-    OutlineColor = Color3.fromRGB(147, 143, 153), -- md.sys.color.outline
-    DebugTextColor = Color3.fromRGB(201, 23, 27), -- Using the same Nebula Crimson Red for debug text
+    -- Surface colors (AMOLED + Material You 3)
+    MainColor = Color3.fromRGB(0, 0, 0), -- Pure black for AMOLED
+    AccentColor = Color3.fromRGB(10, 10, 10), -- Near-black for containers
+    ButtonColor = Color3.fromRGB(18, 18, 18), -- Slightly lighter black for buttons
+    TextColor = Color3.fromRGB(230, 225, 229), -- Light text for contrast
+    HighlightColor = Color3.fromRGB(141, 17, 19), -- Darker glowing red
+    SecondaryHighlight = Color3.fromRGB(111, 14, 16), -- Even darker red for states
+    SurfaceContainerHigh = Color3.fromRGB(15, 15, 15), -- Dark surface for elevated containers
+    OutlineColor = Color3.fromRGB(40, 40, 40), -- Subtle dark outline
+    DebugTextColor = Color3.fromRGB(141, 17, 19), -- Matching darker red
     
     -- Typography
     FontFamily = Enum.Font.GothamBold,
-    ButtonSize = UDim2.new(0, 150, 0, 32), -- Material You 3 standard touch target
-    CornerRadius = UDim.new(0, 12), -- Material You 3 medium roundness
+    ButtonSize = UDim2.new(0, 150, 0, 32),
+    CornerRadius = UDim.new(0, 12),
     
     -- Elevation and States
-    SurfaceElevation = 0.03, -- Base transparency for elevation effect
-    HoverElevation = 0.01, -- Less transparency on hover
-    PressedElevation = 0.05, -- More transparency when pressed
+    SurfaceElevation = 0.95, -- High transparency for AMOLED
+    HoverElevation = 0.93, -- Slightly more visible on hover
+    PressedElevation = 0.92, -- Most visible when pressed
 }
 
 function Library:CreateWindow(title)
@@ -203,7 +203,7 @@ function Library:CreateWindow(title)
     ComingSoonLabel.Visible = false
     
     -- Create Navigation Buttons
-    local buttons = {"Overview", "Fruits", "Quests/Raids", "Sea-Events", "Teleport", "Misc", "Settings"}
+    local buttons = {"Overview", "Fruits", "Quests/Raids", "Sea-Events", "Teleport", "Misc", "Settings", "Advanced"}
     local buttonSpacing = 2
     local currentY = 5
     
@@ -221,7 +221,7 @@ function Library:CreateWindow(title)
     for _, buttonText in ipairs(buttons) do
         local ButtonContainer = Instance.new("Frame")
         ButtonContainer.Name = buttonText .. "Container"
-        ButtonContainer.Size = UDim2.new(0.9, 0, 0, 30)
+        ButtonContainer.Size = UDim2.new(0.9, 0, 0, 26) -- Reduced height from 30 to 26
         ButtonContainer.Position = UDim2.new(0.05, 0, 0, currentY)
         ButtonContainer.BackgroundColor3 = UISettings.ButtonColor
         ButtonContainer.BackgroundTransparency = UISettings.SurfaceElevation
@@ -291,7 +291,7 @@ function Library:CreateWindow(title)
             end
         end)
         
-        currentY = currentY + 32 + buttonSpacing  -- Reduced spacing (was 40 + 4)
+        currentY = currentY + 28 + buttonSpacing  -- Reduced spacing (was 32 + buttonSpacing)
     end
     
     -- Dragging Functionality
@@ -371,6 +371,220 @@ function Library:CreateWindow(title)
     clearContentFrame()
     ComingSoonLabel.Text = "Overview - Coming Soon!"
     
+    -- Function to create the Advanced Debug Panel
+    local function createAdvancedPanel()
+        -- Clear existing content
+        clearContentFrame()
+        ComingSoonLabel.Visible = false
+
+        -- Create Debug Log Container
+        local DebugLogContainer = Instance.new("ScrollingFrame")
+        DebugLogContainer.Name = "DebugLogContainer"
+        DebugLogContainer.Size = UDim2.new(1, -20, 0.7, -10)
+        DebugLogContainer.Position = UDim2.new(0, 10, 0, 10)
+        DebugLogContainer.BackgroundColor3 = UISettings.MainColor
+        DebugLogContainer.BackgroundTransparency = 0.92
+        DebugLogContainer.BorderSizePixel = 0
+        DebugLogContainer.ScrollBarThickness = 2
+        DebugLogContainer.ScrollingDirection = Enum.ScrollingDirection.Y
+        DebugLogContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        DebugLogContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+        DebugLogContainer.Parent = ContentFrame
+
+        -- Add glow effect to Debug Log Container
+        local DebugLogGlow = Instance.new("ImageLabel")
+        DebugLogGlow.Name = "Glow"
+        DebugLogGlow.BackgroundTransparency = 1
+        DebugLogGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
+        DebugLogGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+        DebugLogGlow.Size = UDim2.new(1, 40, 1, 40)
+        DebugLogGlow.ZIndex = DebugLogContainer.ZIndex - 1
+        DebugLogGlow.Image = "rbxassetid://4996891970"
+        DebugLogGlow.ImageColor3 = UISettings.HighlightColor
+        DebugLogGlow.ImageTransparency = 0.92
+        DebugLogGlow.Parent = DebugLogContainer
+
+        -- Add corner radius to Debug Log Container
+        local DebugLogCorner = Instance.new("UICorner")
+        DebugLogCorner.CornerRadius = UDim.new(0, 8)
+        DebugLogCorner.Parent = DebugLogContainer
+
+        -- Add subtle stroke to Debug Log Container
+        local DebugLogStroke = Instance.new("UIStroke")
+        DebugLogStroke.Color = UISettings.OutlineColor
+        DebugLogStroke.Transparency = 0.8
+        DebugLogStroke.Thickness = 1
+        DebugLogStroke.Parent = DebugLogContainer
+
+        -- Create Execution History Container
+        local ExecutionHistoryContainer = Instance.new("ScrollingFrame")
+        ExecutionHistoryContainer.Name = "ExecutionHistoryContainer"
+        ExecutionHistoryContainer.Size = UDim2.new(1, -20, 0.3, -10)
+        ExecutionHistoryContainer.Position = UDim2.new(0, 10, 0.7, 10)
+        ExecutionHistoryContainer.BackgroundColor3 = UISettings.MainColor
+        ExecutionHistoryContainer.BackgroundTransparency = 0
+        ExecutionHistoryContainer.BorderSizePixel = 0
+        ExecutionHistoryContainer.ScrollBarThickness = 4
+        ExecutionHistoryContainer.ScrollingDirection = Enum.ScrollingDirection.Y
+        ExecutionHistoryContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        ExecutionHistoryContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+        ExecutionHistoryContainer.Parent = ContentFrame
+
+        -- Add corner radius to Execution History Container
+        local ExecutionHistoryCorner = Instance.new("UICorner")
+        ExecutionHistoryCorner.CornerRadius = UDim.new(0, 8)
+        ExecutionHistoryCorner.Parent = ExecutionHistoryContainer
+
+        -- Add subtle stroke to Execution History Container
+        local ExecutionHistoryStroke = Instance.new("UIStroke")
+        ExecutionHistoryStroke.Color = UISettings.OutlineColor
+        ExecutionHistoryStroke.Transparency = 0.8
+        ExecutionHistoryStroke.Thickness = 1
+        ExecutionHistoryStroke.Parent = ExecutionHistoryContainer
+
+        -- Add glow effect to Execution History Container
+        local ExecutionHistoryGlow = Instance.new("ImageLabel")
+        ExecutionHistoryGlow.Name = "Glow"
+        ExecutionHistoryGlow.BackgroundTransparency = 1
+        ExecutionHistoryGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
+        ExecutionHistoryGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+        ExecutionHistoryGlow.Size = UDim2.new(1, 40, 1, 40)
+        ExecutionHistoryGlow.ZIndex = ExecutionHistoryContainer.ZIndex - 1
+        ExecutionHistoryGlow.Image = "rbxassetid://4996891970"
+        ExecutionHistoryGlow.ImageColor3 = UISettings.HighlightColor
+        ExecutionHistoryGlow.ImageTransparency = 0.92
+        ExecutionHistoryGlow.Parent = ExecutionHistoryContainer
+
+        -- Function to add debug log entry
+        local function addDebugLog(message, type)
+            local logEntry = Instance.new("TextLabel")
+            logEntry.Size = UDim2.new(1, -16, 0, 20)
+            logEntry.Position = UDim2.new(0, 8, 0, #DebugLogContainer:GetChildren() * 22)
+            logEntry.BackgroundTransparency = 1
+            logEntry.Text = "[" .. type .. "] " .. message
+            logEntry.TextColor3 = UISettings.DebugTextColor
+            logEntry.TextSize = 12
+            logEntry.Font = UISettings.FontFamily
+            logEntry.TextXAlignment = Enum.TextXAlignment.Left
+            logEntry.TextWrapped = true
+            logEntry.Parent = DebugLogContainer
+        end
+
+        -- Function to add execution history entry
+        local function addExecutionHistory(action)
+            local historyEntry = Instance.new("TextLabel")
+            historyEntry.Size = UDim2.new(1, -16, 0, 20)
+            historyEntry.Position = UDim2.new(0, 8, 0, #ExecutionHistoryContainer:GetChildren() * 22)
+            historyEntry.BackgroundTransparency = 1
+            historyEntry.Text = os.date("[%H:%M:%S]") .. " " .. action
+            historyEntry.TextColor3 = UISettings.TextColor
+            historyEntry.TextSize = 12
+            historyEntry.Font = UISettings.FontFamily
+            historyEntry.TextXAlignment = Enum.TextXAlignment.Left
+            historyEntry.TextWrapped = true
+            historyEntry.Parent = ExecutionHistoryContainer
+        end
+
+        -- Add some sample debug logs
+        addDebugLog("Debug panel initialized", "INFO")
+        addDebugLog("System ready", "STATUS")
+        
+        -- Add some sample execution history
+        addExecutionHistory("Advanced debug panel opened")
+        
+        return {
+            AddDebugLog = addDebugLog,
+            AddExecutionHistory = addExecutionHistory
+        }
+    end
+
+    -- Add glow effect to selected button
+    local function addButtonGlow(button)
+        -- Remove existing glow if any
+        local existingGlow = button:FindFirstChild("Glow")
+        if existingGlow then
+            existingGlow:Destroy()
+        end
+
+        -- Create glow effect
+        local Glow = Instance.new("ImageLabel")
+        Glow.Name = "Glow"
+        Glow.BackgroundTransparency = 1
+        Glow.Position = UDim2.new(0.5, 0, 0.5, 0)
+        Glow.AnchorPoint = Vector2.new(0.5, 0.5)
+        Glow.Size = UDim2.new(1, 20, 1, 20)
+        Glow.ZIndex = button.ZIndex - 1
+        Glow.Image = "rbxassetid://4996891970" -- Radial gradient
+        Glow.ImageColor3 = UISettings.HighlightColor
+        Glow.ImageTransparency = 0.85
+        Glow.Parent = button
+    end
+
+    -- Update button click handling with glow effect
+    for _, child in ipairs(NavBar:GetChildren()) do
+        if child:IsA("Frame") and child.Name:find("Container") then
+            local button = child:FindFirstChild(child.Name:gsub("Container", "Button"))
+            if button then
+                button.MouseButton1Click:Connect(function()
+                    -- Update all buttons to default state
+                    for _, otherButton in ipairs(NavBar:GetChildren()) do
+                        if otherButton:IsA("Frame") and otherButton.Name:find("Container") then
+                            otherButton.BackgroundColor3 = UISettings.ButtonColor
+                            otherButton.BackgroundTransparency = UISettings.SurfaceElevation
+                            local textButton = otherButton:FindFirstChild(otherButton.Name:gsub("Container", "Button"))
+                            if textButton then
+                                textButton.TextColor3 = UISettings.TextColor
+                                local glow = textButton:FindFirstChild("Glow")
+                                if glow then
+                                    glow:Destroy()
+                                end
+                            end
+                        end
+                    end
+
+                    -- Apply selected state with glow
+                    child.BackgroundColor3 = UISettings.HighlightColor
+                    child.BackgroundTransparency = 0.85
+                    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    addButtonGlow(child)
+
+                    -- Handle specific panel content
+                    if button.Text == "Advanced" then
+                        local DebugPanel = createAdvancedPanel()
+                        Library.DebugPanel = DebugPanel
+                    else
+                        clearContentFrame()
+                        ComingSoonLabel.Text = button.Text .. " - Coming Soon!"
+                    end
+                end)
+
+                -- Enhanced hover effects with glow
+                child.MouseEnter:Connect(function()
+                    if child.BackgroundColor3 ~= UISettings.HighlightColor then
+                        TweenService:Create(child, TweenInfo.new(0.2), {
+                            BackgroundTransparency = UISettings.HoverElevation,
+                            BackgroundColor3 = UISettings.SurfaceContainerHigh
+                        }):Play()
+                        addButtonGlow(child)
+                    end
+                end)
+
+                child.MouseLeave:Connect(function()
+                    if child.BackgroundColor3 ~= UISettings.HighlightColor then
+                        TweenService:Create(child, TweenInfo.new(0.2), {
+                            BackgroundTransparency = UISettings.SurfaceElevation,
+                            BackgroundColor3 = UISettings.ButtonColor
+                        }):Play()
+                        local glow = child:FindFirstChild("Glow")
+                        if glow then
+                            glow:Destroy()
+                        end
+                    end
+                end)
+            end
+        end
+    end
+
     return MainUI
 end
 
