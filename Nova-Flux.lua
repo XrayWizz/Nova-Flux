@@ -73,7 +73,7 @@ function Library:CreateWindow(title)
     TitleBar.Name = "TitleBar"
     TitleBar.Size = UDim2.new(1, 0, 0, 30)
     TitleBar.BackgroundColor3 = UISettings.SurfaceContainerHigh
-    TitleBar.BackgroundTransparency = UISettings.SurfaceElevation
+    TitleBar.BackgroundTransparency = 0
     TitleBar.Parent = MainFrame
     
     -- Add subtle stroke to TitleBar
@@ -112,7 +112,7 @@ function Library:CreateWindow(title)
     CloseButton.Font = UISettings.FontFamily
     CloseButton.Parent = TitleBar
     
-    -- Add hover effect for close button
+    -- Close button hover effect
     CloseButton.MouseEnter:Connect(function()
         TweenService:Create(CloseButton, TweenInfo.new(0.2), {
             TextColor3 = Color3.fromRGB(255, 80, 80)
@@ -123,6 +123,11 @@ function Library:CreateWindow(title)
         TweenService:Create(CloseButton, TweenInfo.new(0.2), {
             TextColor3 = UISettings.TextColor
         }):Play()
+    end)
+    
+    -- Close button functionality
+    CloseButton.MouseButton1Click:Connect(function()
+        MainUI:Destroy()
     end)
     
     -- Update Minimize Button with Material You 3 styling
@@ -137,7 +142,7 @@ function Library:CreateWindow(title)
     MinimizeButton.Font = UISettings.FontFamily
     MinimizeButton.Parent = TitleBar
     
-    -- Add hover effect for minimize button
+    -- Minimize button hover effect
     MinimizeButton.MouseEnter:Connect(function()
         TweenService:Create(MinimizeButton, TweenInfo.new(0.2), {
             TextColor3 = UISettings.HighlightColor
@@ -148,6 +153,44 @@ function Library:CreateWindow(title)
         TweenService:Create(MinimizeButton, TweenInfo.new(0.2), {
             TextColor3 = UISettings.TextColor
         }):Play()
+    end)
+    
+    -- Minimize Button Functionality
+    local minimized = false
+    local originalSize = MainFrame.Size
+    local originalNavBarVis = true
+    local originalContentVis = true
+    
+    MinimizeButton.MouseButton1Click:Connect(function()
+        minimized = not minimized
+        if minimized then
+            -- Store current visibility states
+            originalNavBarVis = NavBar.Visible
+            originalContentVis = ContentFrame.Visible
+            
+            -- Hide elements
+            NavBar.Visible = false
+            ContentFrame.Visible = false
+            DropShadow.Visible = false
+            
+            -- Animate to minimized state
+            TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, 450, 0, 30)
+            }):Play()
+        else
+            -- Animate back to original size
+            TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Size = originalSize
+            }):Play()
+            
+            -- Wait for animation to complete before showing content
+            wait(0.2)
+            
+            -- Restore original visibility states
+            NavBar.Visible = originalNavBarVis
+            ContentFrame.Visible = originalContentVis
+            DropShadow.Visible = true
+        end
     end)
     
     -- Navigation Bar with elevated surface
@@ -221,30 +264,31 @@ function Library:CreateWindow(title)
     
     -- Function to create glowing text effect
     local function setGlowingText(textButton, isSelected)
+        -- Remove any existing glow effect first
+        local existingGlow = textButton:FindFirstChild("TextGlow")
+        if existingGlow then
+            existingGlow:Destroy()
+        end
+
         if isSelected then
-            -- Create or update text glow effect
-            local existingGlow = textButton:FindFirstChild("TextGlow")
-            if not existingGlow then
-                local textGlow = Instance.new("TextLabel")
-                textGlow.Name = "TextGlow"
-                textGlow.Size = UDim2.new(1, 0, 1, 0)
-                textGlow.Position = UDim2.new(0, 0, 0, 0)
-                textGlow.BackgroundTransparency = 1
-                textGlow.Text = textButton.Text
-                textGlow.TextColor3 = UISettings.HighlightColor
-                textGlow.TextSize = textButton.TextSize
-                textGlow.Font = textButton.Font
-                textGlow.ZIndex = textButton.ZIndex - 1
-                textGlow.TextTransparency = 0
-                textGlow.Parent = textButton
-            end
+            -- Create new text glow effect
+            local textGlow = Instance.new("TextLabel")
+            textGlow.Name = "TextGlow"
+            textGlow.Size = UDim2.new(1, 0, 1, 0)
+            textGlow.Position = UDim2.new(0, 0, 0, 0)
+            textGlow.BackgroundTransparency = 1
+            textGlow.Text = textButton.Text
+            textGlow.TextColor3 = UISettings.HighlightColor
+            textGlow.TextSize = textButton.TextSize
+            textGlow.Font = textButton.Font
+            textGlow.ZIndex = textButton.ZIndex - 1
+            textGlow.TextTransparency = 0
+            textGlow.Parent = textButton
+            
+            -- Set main text color
             textButton.TextColor3 = UISettings.HighlightColor
         else
-            -- Remove glow effect and reset text color
-            local glow = textButton:FindFirstChild("TextGlow")
-            if glow then
-                glow:Destroy()
-            end
+            -- Reset text color to default
             textButton.TextColor3 = UISettings.TextColor
         end
     end
@@ -256,22 +300,29 @@ function Library:CreateWindow(title)
                 local button = child:FindFirstChild(child.Name:gsub("Container", "Button"))
                 if button then
                     local isSelected = (button == selectedButton)
-                    -- Only change background color if not initial load
-                    if not initialLoad then
-                        child.BackgroundColor3 = isSelected and UISettings.HighlightColor or UISettings.ButtonColor
-                    else
-                        child.BackgroundColor3 = UISettings.ButtonColor
-                    end
-                    child.BackgroundTransparency = 0
-                    setGlowingText(button, isSelected)
                     
-                    -- Handle glow effect
+                    -- Always set default background first
+                    child.BackgroundColor3 = UISettings.ButtonColor
+                    child.BackgroundTransparency = 0
+                    
+                    -- Remove any existing glow
                     local glow = child:FindFirstChild("Glow")
                     if glow then
                         glow:Destroy()
                     end
-                    if isSelected and not initialLoad then
-                        addButtonGlow(child)
+
+                    if isSelected then
+                        -- Set text color and glow for selected button
+                        setGlowingText(button, true)
+                        
+                        -- Only change background if not initial load
+                        if not initialLoad then
+                            child.BackgroundColor3 = UISettings.HighlightColor
+                            addButtonGlow(child)
+                        end
+                    else
+                        -- Reset unselected button
+                        setGlowingText(button, false)
                     end
                 end
             end
@@ -304,13 +355,13 @@ function Library:CreateWindow(title)
         Button.Position = UDim2.new(0, 0, 0, 0)
         Button.BackgroundTransparency = 1
         Button.Text = buttonText
-        Button.TextColor3 = UISettings.TextColor
+        Button.TextColor3 = UISettings.TextColor  -- Set default text color
         Button.TextSize = 12
         Button.Font = UISettings.FontFamily
         Button.Parent = ButtonContainer
         
         Button.MouseButton1Click:Connect(function()
-            updateButtonStates(Button, false)
+            updateButtonStates(Button, false)  -- false means not initial load
 
             if buttonText == "Advanced" then
                 local DebugPanel = createAdvancedPanel()
@@ -343,12 +394,13 @@ function Library:CreateWindow(title)
         currentY = currentY + 28 + buttonSpacing
     end
     
-    -- Set Overview as default selected button with only text highlighted
+    -- Initialize Overview as default selected button
+    wait(0.1)  -- Small delay to ensure all buttons are created
     local OverviewButton = NavBar:FindFirstChild("OverviewContainer")
     if OverviewButton then
         local button = OverviewButton:FindFirstChild("OverviewButton")
         if button then
-            updateButtonStates(button, true) -- Pass true for initialLoad
+            updateButtonStates(button, true)  -- true means initial load
             clearContentFrame()
             ComingSoonLabel.Text = "Overview - Coming Soon!"
         end
@@ -388,40 +440,6 @@ function Library:CreateWindow(title)
     UserInputService.InputChanged:Connect(function(input)
         if input == dragInput and dragging then
             updateDrag(input)
-        end
-    end)
-    
-    -- Close Button Functionality
-    CloseButton.MouseButton1Click:Connect(function()
-        MainUI:Destroy()
-    end)
-    
-    -- Minimize Button Functionality with shadow handling
-    local minimized = false
-    local originalSize = MainFrame.Size
-    
-    MinimizeButton.MouseButton1Click:Connect(function()
-        minimized = not minimized
-        if minimized then
-            NavBar.Visible = false
-            ContentFrame.Visible = false
-            DropShadow.Visible = false -- Hide shadow when minimized
-            
-            -- Smooth minimize animation
-            TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                Size = UDim2.new(0, 450, 0, 30)
-            }):Play()
-        else
-            -- Smooth restore animation
-            TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                Size = originalSize
-            }):Play()
-            
-            -- Wait for animation to complete before showing content
-            wait(0.2)
-            NavBar.Visible = true
-            ContentFrame.Visible = true
-            DropShadow.Visible = true -- Show shadow when restored
         end
     end)
     
