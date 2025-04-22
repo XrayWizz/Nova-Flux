@@ -9,10 +9,11 @@ local UserInputService = game:GetService("UserInputService")
 local UISettings = {
     MainColor = Color3.fromRGB(0, 0, 0), -- AMOLED black
     AccentColor = Color3.fromRGB(10, 10, 10), -- Slightly lighter black
+    ButtonColor = Color3.fromRGB(20, 20, 25), -- Darker button background
     TextColor = Color3.fromRGB(255, 255, 255),
     HighlightColor = Color3.fromRGB(100, 90, 255),
     FontFamily = Enum.Font.GothamBold,
-    ButtonSize = UDim2.new(0, 150, 0, 25), -- Reduced button height
+    ButtonSize = UDim2.new(0, 150, 0, 25),
     CornerRadius = UDim.new(0, 8)
 }
 
@@ -127,8 +128,8 @@ function Library:CreateWindow(title)
     
     -- Create Navigation Buttons
     local buttons = {"Overview", "Fruits", "Quests/Raids", "Sea-Events", "Teleport", "Misc", "Settings"}
-    local buttonSpacing = 2 -- Reduced spacing
-    local currentY = 5 -- Start closer to top
+    local buttonSpacing = 2
+    local currentY = 5
     
     -- Function to clear content frame
     local function clearContentFrame()
@@ -141,42 +142,61 @@ function Library:CreateWindow(title)
     end
     
     for _, buttonText in ipairs(buttons) do
-        local Button = Instance.new("TextButton")
-        Button.Name = buttonText .. "Button"
-        Button.Size = UDim2.new(0.9, 0, 0, 30) -- Smaller button height
-        Button.Position = UDim2.new(0.05, 0, 0, currentY)
-        Button.BackgroundColor3 = UISettings.MainColor
-        Button.BackgroundTransparency = 0.1
-        Button.Text = buttonText
-        Button.TextColor3 = UISettings.TextColor
-        Button.TextSize = 12 -- Smaller text
-        Button.Font = UISettings.FontFamily
-        Button.Parent = NavBar
+        local ButtonContainer = Instance.new("Frame")
+        ButtonContainer.Name = buttonText .. "Container"
+        ButtonContainer.Size = UDim2.new(0.9, 0, 0, 30)
+        ButtonContainer.Position = UDim2.new(0.05, 0, 0, currentY)
+        ButtonContainer.BackgroundColor3 = UISettings.ButtonColor
+        ButtonContainer.BackgroundTransparency = 0
+        ButtonContainer.Parent = NavBar
         
         local ButtonCorner = Instance.new("UICorner")
         ButtonCorner.CornerRadius = UDim.new(0, 6)
-        ButtonCorner.Parent = Button
+        ButtonCorner.Parent = ButtonContainer
+        
+        local Button = Instance.new("TextButton")
+        Button.Name = buttonText .. "Button"
+        Button.Size = UDim2.new(1, 0, 1, 0)
+        Button.Position = UDim2.new(0, 0, 0, 0)
+        Button.BackgroundTransparency = 1
+        Button.Text = buttonText
+        Button.TextColor3 = UISettings.TextColor
+        Button.TextSize = 12
+        Button.Font = UISettings.FontFamily
+        Button.Parent = ButtonContainer
         
         -- Button Functionality
         Button.MouseButton1Click:Connect(function()
             clearContentFrame()
             ComingSoonLabel.Text = buttonText .. " - Coming Soon!"
+            
+            -- Highlight the selected button
+            for _, otherButton in ipairs(NavBar:GetChildren()) do
+                if otherButton:IsA("Frame") and otherButton.Name:find("Container") then
+                    otherButton.BackgroundColor3 = UISettings.ButtonColor
+                end
+            end
+            ButtonContainer.BackgroundColor3 = UISettings.HighlightColor
         end)
         
         -- Hover Effect
-        Button.MouseEnter:Connect(function()
-            TweenService:Create(Button, TweenInfo.new(0.3), {
-                BackgroundColor3 = UISettings.HighlightColor
-            }):Play()
+        ButtonContainer.MouseEnter:Connect(function()
+            if ButtonContainer.BackgroundColor3 ~= UISettings.HighlightColor then
+                TweenService:Create(ButtonContainer, TweenInfo.new(0.3), {
+                    BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+                }):Play()
+            end
         end)
         
-        Button.MouseLeave:Connect(function()
-            TweenService:Create(Button, TweenInfo.new(0.3), {
-                BackgroundColor3 = UISettings.MainColor
-            }):Play()
+        ButtonContainer.MouseLeave:Connect(function()
+            if ButtonContainer.BackgroundColor3 ~= UISettings.HighlightColor then
+                TweenService:Create(ButtonContainer, TweenInfo.new(0.3), {
+                    BackgroundColor3 = UISettings.ButtonColor
+                }):Play()
+            end
         end)
         
-        currentY = currentY + 33 + buttonSpacing -- Reduced spacing between buttons
+        currentY = currentY + 33 + buttonSpacing
     end
     
     -- Dragging Functionality
@@ -224,54 +244,26 @@ function Library:CreateWindow(title)
     -- Minimize Button Functionality
     local minimized = false
     local originalSize = MainFrame.Size
-    local originalNavCorner = NavBar.UICorner.CornerRadius
-    local originalContentCorner = ContentFrame.UICorner and ContentFrame.UICorner.CornerRadius or UISettings.CornerRadius
-
+    
     MinimizeButton.MouseButton1Click:Connect(function()
         minimized = not minimized
         if minimized then
-            -- Hide content first
             NavBar.Visible = false
             ContentFrame.Visible = false
-            
-            -- Adjust corners for minimized state
-            if NavBar.UICorner then
-                NavBar.UICorner.CornerRadius = UDim.new(0, 0)
-            end
-            if ContentFrame.UICorner then
-                ContentFrame.UICorner.CornerRadius = UDim.new(0, 0)
-            end
-            
-            -- Only round the bottom corners of title bar when minimized
-            TitleCorner.CornerRadius = UDim.new(0, 8)
-            Corner.CornerRadius = UDim.new(0, 8)
-            
-            -- Minimize with tweening
             MainFrame:TweenSize(UDim2.new(0, 450, 0, 30), "Out", "Quad", 0.3, true)
         else
-            -- Restore original corner radius
-            if NavBar.UICorner then
-                NavBar.UICorner.CornerRadius = originalNavCorner
-            end
-            if ContentFrame.UICorner then
-                ContentFrame.UICorner.CornerRadius = originalContentCorner
-            end
-            
-            -- Restore corners
-            TitleCorner.CornerRadius = UISettings.CornerRadius
-            Corner.CornerRadius = UISettings.CornerRadius
-            
-            -- Restore size with tweening
             MainFrame:TweenSize(originalSize, "Out", "Quad", 0.3, true)
-            
-            -- Show content after size restoration
-            task.wait(0.2) -- Small delay to prevent visual glitches
+            wait(0.3) -- Wait for animation to complete
             NavBar.Visible = true
             ContentFrame.Visible = true
         end
     end)
     
     -- Show Overview by default
+    local OverviewButton = NavBar:FindFirstChild("OverviewContainer")
+    if OverviewButton then
+        OverviewButton.BackgroundColor3 = UISettings.HighlightColor
+    end
     clearContentFrame()
     ComingSoonLabel.Text = "Overview - Coming Soon!"
     
