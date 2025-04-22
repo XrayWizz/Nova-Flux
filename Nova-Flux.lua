@@ -250,13 +250,18 @@ function Library:CreateWindow(title)
     end
 
     -- Function to update button states
-    local function updateButtonStates(selectedButton)
+    local function updateButtonStates(selectedButton, initialLoad)
         for _, child in ipairs(NavBar:GetChildren()) do
             if child:IsA("Frame") and child.Name:find("Container") then
                 local button = child:FindFirstChild(child.Name:gsub("Container", "Button"))
                 if button then
                     local isSelected = (button == selectedButton)
-                    child.BackgroundColor3 = isSelected and UISettings.HighlightColor or UISettings.ButtonColor
+                    -- Only change background color if not initial load
+                    if not initialLoad then
+                        child.BackgroundColor3 = isSelected and UISettings.HighlightColor or UISettings.ButtonColor
+                    else
+                        child.BackgroundColor3 = UISettings.ButtonColor
+                    end
                     child.BackgroundTransparency = 0
                     setGlowingText(button, isSelected)
                     
@@ -265,7 +270,7 @@ function Library:CreateWindow(title)
                     if glow then
                         glow:Destroy()
                     end
-                    if isSelected then
+                    if isSelected and not initialLoad then
                         addButtonGlow(child)
                     end
                 end
@@ -305,7 +310,7 @@ function Library:CreateWindow(title)
         Button.Parent = ButtonContainer
         
         Button.MouseButton1Click:Connect(function()
-            updateButtonStates(Button)
+            updateButtonStates(Button, false)
 
             if buttonText == "Advanced" then
                 local DebugPanel = createAdvancedPanel()
@@ -338,12 +343,12 @@ function Library:CreateWindow(title)
         currentY = currentY + 28 + buttonSpacing
     end
     
-    -- Set Overview as default selected button
+    -- Set Overview as default selected button with only text highlighted
     local OverviewButton = NavBar:FindFirstChild("OverviewContainer")
     if OverviewButton then
         local button = OverviewButton:FindFirstChild("OverviewButton")
         if button then
-            updateButtonStates(button)
+            updateButtonStates(button, true) -- Pass true for initialLoad
             clearContentFrame()
             ComingSoonLabel.Text = "Overview - Coming Soon!"
         end
